@@ -1,6 +1,8 @@
 import socket
 import threading
 import time
+import pickle
+
 
 # threading -> create a new thread everytime a new connection
 
@@ -21,6 +23,10 @@ server.bind(ADDR)
 # create a server and bind the server to address above
 
 
+a = {1: "Hey", 2: "There", 3: "How", 4: "Are", 5: "You"}
+d = pickle.dumps(a)
+
+
 def handle_client(conn, addr):
     """
     handle the connection with each clients
@@ -37,6 +43,15 @@ def handle_client(conn, addr):
         conn.send(send_length)
         conn.send(message)
 
+    def send_pickled_msg(msg):
+        msg_length = len(msg)
+        send_length = str(msg_length).encode(FORMAT)
+        send_length += b" " * (HEADER - len(send_length))
+        # make up to 64byte message length
+        # standardize the first message sent to server
+        conn.send(send_length)
+        conn.send(msg)
+
     def rec_msg():
         msg_length = conn.recv(HEADER).decode(FORMAT)
         # receive the length of the message
@@ -51,6 +66,7 @@ def handle_client(conn, addr):
             print(f"[{addr}] {msg}")
 
             send_msg(msg="Msg received")
+            send_pickled_msg(d)
             # conn.send("Msg received".encode(FORMAT))
 
     connected = True
