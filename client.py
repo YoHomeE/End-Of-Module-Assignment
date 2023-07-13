@@ -1,4 +1,5 @@
 import socket
+import time
 
 HEADER = 64
 PORT = 5050
@@ -27,7 +28,25 @@ def send(msg):
     # standardize the first message sent to server
     client.send(send_length)
     client.send(message)
-    print(client.recv(2048).decode(FORMAT))
+
+
+def rec_msg():
+    msg_length = client.recv(HEADER).decode(FORMAT)
+    # receive the length of the message
+    if msg_length:
+        msg_length = int(msg_length)
+        # convert the msg_length to integer
+        msg = client.recv(msg_length).decode(FORMAT)
+        # receive the actual message for the exact byte length
+        print(msg)
+
+
+#    msg = client.recv(2048).decode(FORMAT)
+#    print(msg)
 
 
 send("Hello World!")
+while True:
+    time.sleep(3)
+    send(f"time now is {time.time()}")
+    rec_msg()
