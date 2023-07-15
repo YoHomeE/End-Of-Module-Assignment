@@ -42,6 +42,12 @@ def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
 
     def send_msg(msg):
+        """
+        send the message to client
+        msg: string
+        return: None
+
+        """
         message = msg.encode(FORMAT)
         msg_length = len(message)
         send_length = str(msg_length).encode(FORMAT)
@@ -52,6 +58,11 @@ def handle_client(conn, addr):
         conn.send(message)
 
     def send_pickled_msg(msg):
+        """
+        send the pickled message to client
+        msg: dictionary
+        return: None
+        """
         # send the pickled message to client
         msg = pickle.dumps(msg)
         msg_length = len(msg)
@@ -63,6 +74,11 @@ def handle_client(conn, addr):
         conn.send(msg)
 
     def send_json_msg(msg):
+        """
+        send json message to client
+        msg: dictionary
+        return: None
+        """
         # send the json message to client
         msg = json.dumps(msg).encode(FORMAT)
         msg_length = len(msg)
@@ -74,6 +90,11 @@ def handle_client(conn, addr):
         conn.send(msg)
 
     def rec_msg():
+        """
+        receive the message from client
+        return: None
+
+        """
         msg_length = conn.recv(HEADER).decode(FORMAT)
         # receive the length of the message
         if msg_length:
