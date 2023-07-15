@@ -1,6 +1,7 @@
 import socket
 import time
 import pickle
+import json
 
 HEADER = 64
 PORT = 5050
@@ -39,7 +40,7 @@ def rec_msg():
         # convert the msg_length to integer
         msg = client.recv(msg_length).decode(FORMAT)
         # receive the actual message for the exact byte length
-        print(msg)
+        print(f"msg from server: {msg}")
 
 
 def rec_pickled_msg():
@@ -51,7 +52,19 @@ def rec_pickled_msg():
         msg = client.recv(msg_length)
         msg = pickle.loads(msg)
         # receive the actual message for the exact byte length
-        print(msg)
+        print(f"pickled msg from server: {msg}")
+
+
+def rec_json_msg():
+    msg_length = client.recv(HEADER).decode(FORMAT)
+    # receive the length of the message
+    if msg_length:
+        msg_length = int(msg_length)
+        # convert the msg_length to integer
+        msg = client.recv(msg_length).decode(FORMAT)
+        msg = json.loads(msg)
+        # receive the actual message for the exact byte length
+        print(f"json msg from server: {msg}")
 
 
 #    msg = client.recv(2048).decode(FORMAT)
@@ -59,8 +72,10 @@ def rec_pickled_msg():
 
 
 send("Hello World!")
+rec_pickled_msg()
 while True:
     time.sleep(3)
     send(f"time now is {time.time()}")
     rec_msg()
-    rec_pickled_msg()
+    time.sleep(3)
+    rec_json_msg()

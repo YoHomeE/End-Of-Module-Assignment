@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 import pickle
-
+import json
 
 # threading -> create a new thread everytime a new connection
 
@@ -22,9 +22,17 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 # create a server and bind the server to address above
 
+MLB_team = {
+    "Boston": "Red Sox",
+    "Minnesota": "Twins",
+    "Colorado": "Rockies",
+    "Milwaukee": "Brewers",
+    "Seattle": "Mariners",
+}
+# sample dictionary -> used in json
 
 a = {1: "Hey", 2: "There", 3: "How", 4: "Are", 5: "You"}
-d = pickle.dumps(a)
+# sample dictionary -> used in pickle
 
 
 def handle_client(conn, addr):
@@ -44,6 +52,19 @@ def handle_client(conn, addr):
         conn.send(message)
 
     def send_pickled_msg(msg):
+        # send the pickled message to client
+        msg = pickle.dumps(msg)
+        msg_length = len(msg)
+        send_length = str(msg_length).encode(FORMAT)
+        send_length += b" " * (HEADER - len(send_length))
+        # make up to 64byte message length
+        # standardize the first message sent to server
+        conn.send(send_length)
+        conn.send(msg)
+
+    def send_json_msg(msg):
+        # send the json message to client
+        msg = json.dumps(msg).encode(FORMAT)
         msg_length = len(msg)
         send_length = str(msg_length).encode(FORMAT)
         send_length += b" " * (HEADER - len(send_length))
@@ -65,13 +86,15 @@ def handle_client(conn, addr):
 
             print(f"[{addr}] {msg}")
 
-            send_msg(msg="Msg received")
-            send_pickled_msg(d)
+            send_msg(msg="Msg sent by client has been received")
             # conn.send("Msg received".encode(FORMAT))
 
     connected = True
+    send_pickled_msg(a)
+
     while connected:
         rec_msg()
+        send_json_msg(MLB_team)
 
     conn.close()
 
