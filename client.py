@@ -9,7 +9,6 @@ class Client:
         self.header = 64
         self.port = 5050
         self.server = socket.gethostbyname(socket.gethostname())
-        self.dict = [{}] 
         self.client_socket = None
         self.ADDR = (self.server, self.port)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
