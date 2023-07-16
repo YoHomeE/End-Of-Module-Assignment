@@ -38,6 +38,18 @@ class Server:
                 print("Connection Error!")
 
     def handle_client(self, conn, addr):
+        def send_data(msg: str):
+            """
+            encode str -> byte data, send to the client
+            """
+            message = msg.encode(FORMAT)
+            msg_length = len(message)
+            send_length = str(msg_length).encode(FORMAT)
+            send_length += b" " * (SIZE - len(send_length))
+            # make up to header message length
+            conn.send(send_length)
+            conn.send(message)
+
         def receive_data():
             """
             receive byte data sent from client
@@ -71,19 +83,19 @@ class Server:
                     data_json = json.loads(result["data"])
                     print(f"json data received: {data_json}")
                     json.dump(data_json, f)
-                    print(
-                        f"The file has been saved in the [{self.directory_name}] folder"
-                    )
 
             elif content_type == "Binary":  # Extracting data from Binary file
                 with open(self.directory_name + "/" + filename, "wb") as f:
                     data_pickle = pickle.loads(result["data"])
                     print(f"binary data received: {data_pickle}")
                     pickle.dump(data_pickle, f)
-                    print(
-                        f"The file has been saved in the [{self.directory_name}] folder"
-                    )
 
+            msg = f"The file has been saved on SERVE at [{self.directory_name}] folder"
+            print(msg)
+            send_data(msg)
+
+        # start
+        # calling the functions
         received = receive_data()  # Access data from client
         save_data(self, received)  # Save data to server
 

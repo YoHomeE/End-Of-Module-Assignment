@@ -68,13 +68,27 @@ class Client:
         self.client.send(send_length)
         self.client.send(message)
 
+    def receive_data(self):
+        """
+        receive byte data sent from server
+        return: decoded msg
+        """
+        msg_length = self.client.recv(SIZE).decode(FORMAT)
+        # receive the data length in bytes
+        if msg_length:  # avoid error with empty msg upon connection
+            msg_length = int(msg_length)
+            msg = self.client.recv(msg_length).decode(FORMAT)
+            # receive the actual message for the exact byte length
+            print(f"[SERVER] {msg}")  # print to console for debugging
+            return msg
+
     def savefile(
         self, group_members, selection
     ):  # Saves the file into JSON and Binary so far
         if selection == "JSON":
             with open("group-members.json", "w") as jsonfile:
                 json.dump(group_members, jsonfile)
-                print("Successfully saved dictionary as JSON")
+                print("Successfully saved dictionary as JSON Locally")
             with open("group-members.json", "r") as jsonfile:
                 contents = jsonfile.read()
                 print(contents)
@@ -86,10 +100,12 @@ class Client:
                 }
                 msg = str(info)
                 self.send_data(msg)
+                self.receive_data()  # receive msg if data successfully saved at server
+
         elif selection == "Binary":
             with open("group-members.pkl", "wb") as binfile:
                 pickle.dump(group_members, binfile)
-                print("Dictionary successfully saved as Binary File")
+                print("Dictionary successfully saved as Binary File Locally")
             with open("group-members.pkl", "rb") as binfile:
                 contents = binfile.read()
                 print(contents)
@@ -101,6 +117,7 @@ class Client:
                 }
                 msg = str(info)
                 self.send_data(msg)
+                self.receive_data()  # receive msg if data successfully saved at server
 
         else:  # Not sure if this is necessary now that it is in the __name__= __main__ but supposed to be text for invalid entry
             print("Invalid selection. Please choose either 'JSON' or 'Binary'.")
