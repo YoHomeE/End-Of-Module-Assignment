@@ -89,9 +89,9 @@ def handle_client(conn, addr):
         conn.send(send_length)
         conn.send(msg)
 
-    def rec_msg():
+    def rec_string_msg():
         """
-        receive the message from client
+        receive string message from client
         return: None
 
         """
@@ -110,11 +110,12 @@ def handle_client(conn, addr):
             send_msg(msg="Msg sent by client has been received")
             # conn.send("Msg received".encode(FORMAT))
 
+
     connected = True
     send_pickled_msg(a)
 
     while connected:
-        rec_msg()
+        rec_string_msg()
         send_json_msg(MLB_team)
 
     conn.close()
