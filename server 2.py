@@ -60,7 +60,7 @@ def handle_client(conn, addr):
             # receive the actual message for the exact byte length
             print(f"json msg from client: {msg_loaded}")
             print(f"now saving to server")
-            with open(f"server_file/{file_name}.json", "w") as jsonfile:
+            with open(f"server_file/{file_name}.txt", "w") as jsonfile:
                 json.dump(msg_loaded, jsonfile)
                 print("Successfully saved dictionary as JSON")
 

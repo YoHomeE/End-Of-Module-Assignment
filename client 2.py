@@ -110,7 +110,7 @@ class Client:
     def savefile(self, group_members, file_name, selection):
         if selection == "JSON":
             # save file locally as JSON
-            with open(f"{file_name}.json", "w") as jsonfile:
+            with open(f"{file_name}.txt", "w") as jsonfile:
                 json.dump(group_members, jsonfile)
                 print("Successfully saved dictionary as JSON")
             # print file to screen
