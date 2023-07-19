@@ -2,6 +2,7 @@ import socket  # Import socket module
 import threading  # Import threading module for connecting multiple clients
 import pickle  # Import picke module for serialization
 import json  # Import json module to handle JSON objects
+import dicttoxml
 import ast  # Import ast module for formatting
 import os  # Import os module for saving files in a specific directory
 import time
@@ -64,42 +65,68 @@ class Server:
                 print(f"[{addr}] {msg}")  # print to console for debugging
                 return msg
 
-        def save_data(self, received_data):
-            """
-            save the data received from client
-            """
-            result = ast.literal_eval(received_data)  # Access data as a dictionary
+        def receive_metadata():
+            # receive filename
+            filename = receive_data()
+            filetype = filename.split(".")[-1]
+            file_content = conn.recv(SIZE)
 
-            filename = result["file"]  # Access filename from incoming data
-            content_type = result["type"]  # Access file type from incoming data
+            metadata = {
+                "file_name": filename,
+                "file_type": filetype,
+                "content": file_content,
+            }
+            print(f"data from client {addr} received \n {metadata}")
+            send_data("metadata received")
+            return metadata
 
-            """Saving the file in directory"""
+        def save_to_file(metadata):
+            file_name = metadata["file_name"]
+            file_type = metadata["file_type"]
+            content = metadata["content"]
+            if file_type == "json":
+                with open(self.directory_name + "/" + file_name, "w") as jsonfile:
+                    loaded = json.loads(content)
+                    json.dump(loaded, jsonfile)
+                    print(
+                        "Successfully saved dictionary in JSON with name",
+                        file_name,
+                    )
+                with open(self.directory_name + "/" + file_name, "r") as jsonfile:
+                    contents = jsonfile.read()
+                    print(contents)
 
-            if not os.path.exists(self.directory_name):  # Create directory if absent
-                os.makedirs(self.directory_name)
+            elif file_type == "pkl":
+                with open(self.directory_name + "/" + file_name, "wb") as binfile:
+                    binfile.write(content)
+                    print(
+                        "Dictionary successfully saved in Binary with name", file_name
+                    )
+                with open(self.directory_name + "/" + file_name, "rb") as binfile:
+                    contents = binfile.read()
+                with open(file_name, "rb") as binfile:
+                    original = binfile.read()
+                print("server copy == original copy?", contents == original)
 
-            if content_type == "JSON":  # Extracting data from JSON file
-                with open(self.directory_name + "/" + filename, "w") as f:
-                    data_json = json.loads(result["data"])
-                    print(f"json data received: {data_json}")
-                    json.dump(data_json, f)
+            elif file_type == "xml":
+                with open(self.directory_name + "/" + file_name, "w") as xmlfile:
+                    xmlfile.write(content.decode(FORMAT))
+                    print("Successfully saved dictionary in XML with name", file_name)
+                with open(self.directory_name + "/" + file_name, "r") as xmlfile:
+                    contents = xmlfile.read()
+                    print(contents)
 
-            elif content_type == "Binary":  # Extracting data from Binary file
-                with open(self.directory_name + "/" + filename, "wb") as f:
-                    data_pickle = pickle.loads(result["data"])
-                    print(f"binary data received: {data_pickle}")
-                    pickle.dump(data_pickle, f)
-
-            msg = f"The file has been saved on SERVE at [{self.directory_name}] folder"
-            print(msg)
+            msg = f"The file has been saved on SERVER at [{self.directory_name}] folder"
             send_data(msg)
 
         # start
         # calling the functions
-        received = receive_data()  # Access data from client
-        save_data(self, received)  # Save data to server
+        #       received = receive_data()  # Access data from client
+        #       save_data(self, received)  # Save data to server
 
         """ Closing the connection"""
+        metadata_received = receive_metadata()
+        save_to_file(metadata_received)
         conn.close()
         print(f"[DISCONNECTED] {addr} disconnected.")
 
