@@ -164,7 +164,7 @@ class Client:
         Returns:
             None
         """
-        FILESIZE_BYTES = 320
+        FILESIZE_BYTES = 320 #set this value randomly, not sure how large it should be
 
         if not os.path.exists(filename):
             raise FileNotFoundError(f"The file '{filename}' does not exist.")
