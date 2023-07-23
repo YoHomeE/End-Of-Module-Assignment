@@ -3,9 +3,12 @@ import threading  # Import threading module for connecting multiple clients
 import pickle  # Import picke module for serialization
 import json  # Import json module to handle JSON objects
 import dicttoxml
+import xml.etree.ElementTree as ET
 import ast  # Import ast module for formatting
 import os  # Import os module for saving files in a specific directory
 import time
+import encryption
+
 
 SIZE = 4096
 FORMAT = "utf-8"
@@ -69,21 +72,31 @@ class Server:
             # receive filename
             filename = receive_data()
             filetype = filename.split(".")[-1]
+            encryption_status = receive_data()
             file_content = conn.recv(SIZE)
+            receive_msg = "metadata received"
+
+            if encryption_status == "encrypted":
+                encryption_status = True
+            else:
+                encryption_status = False
 
             metadata = {
                 "file_name": filename,
                 "file_type": filetype,
                 "content": file_content,
+                "encryption_status": encryption_status,
             }
             print(f"data from client {addr} received \n {metadata}")
-            send_data("metadata received")
+
+            send_data(receive_msg)
             return metadata
 
         def save_to_file(metadata):
             file_name = metadata["file_name"]
             file_type = metadata["file_type"]
             content = metadata["content"]
+            encryption_status = metadata["encryption_status"]
             if file_type == "json":
                 with open(self.directory_name + "/" + file_name, "w") as jsonfile:
                     loaded = json.loads(content)
@@ -92,9 +105,16 @@ class Server:
                         "Successfully saved dictionary in JSON with name",
                         file_name,
                     )
-                with open(self.directory_name + "/" + file_name, "r") as jsonfile:
-                    contents = jsonfile.read()
-                    print(contents)
+                if encryption_status:
+                    decrypted_content = encryption.decrypt_list_of_dicts(loaded)
+                    with open(
+                        self.directory_name + "/" + "decrypted_" + file_name, "w"
+                    ) as jsonfile:
+                        json.dump(decrypted_content, jsonfile)
+                    print(
+                        "Successfully saved decrypted dictionary in JSON with name decrypted_"
+                        + file_name,
+                    )
 
             elif file_type == "pkl":
                 with open(self.directory_name + "/" + file_name, "wb") as binfile:
@@ -102,21 +122,42 @@ class Server:
                     print(
                         "Dictionary successfully saved in Binary with name", file_name
                     )
-                with open(self.directory_name + "/" + file_name, "rb") as binfile:
-                    contents = binfile.read()
-                with open(file_name, "rb") as binfile:
-                    original = binfile.read()
-                print("server copy == original copy?", contents == original)
+                if encryption_status:
+                    decrypted_content = encryption.decrypt_list_of_dicts(
+                        pickle.loads(content)
+                    )
+                    with open(
+                        self.directory_name + "/" + "decrypted_" + file_name, "wb"
+                    ) as binfile:
+                        pickle.dump(decrypted_content, binfile)
+                    print(
+                        "Successfully saved decrypted dictionary in Binary with name decrypted_"
+                        + file_name,
+                    )
 
             elif file_type == "xml":
                 with open(self.directory_name + "/" + file_name, "w") as xmlfile:
                     xmlfile.write(content.decode(FORMAT))
                     print("Successfully saved dictionary in XML with name", file_name)
-                with open(self.directory_name + "/" + file_name, "r") as xmlfile:
-                    contents = xmlfile.read()
-                    print(contents)
-
-            msg = f"The file has been saved on SERVER at [{self.directory_name}] folder"
+                if encryption_status:
+                    root = ET.fromstring(content)
+                    list_of_dicts = []
+                    for elem in root.findall("item"):
+                        dict_data = {}
+                        for child in elem:
+                            dict_data[child.tag] = child.text
+                        list_of_dicts.append(dict_data)
+                    decrypted_content = encryption.decrypt_list_of_dicts(list_of_dicts)
+                    xml_string = dicttoxml.dicttoxml(decrypted_content, attr_type=False)
+                    with open(
+                        self.directory_name + "/" + "decrypted_" + file_name, "w"
+                    ) as xmlfile:
+                        xmlfile.write(xml_string.decode())
+                        print(
+                            "Successfully saved decrypted dictionary in XML with name decrypted_",
+                            file_name,
+                        )
+                    msg = f"The file has been saved on SERVER at [{self.directory_name}] folder"
             send_data(msg)
 
         # start

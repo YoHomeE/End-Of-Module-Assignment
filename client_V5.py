@@ -4,9 +4,11 @@ import pickle
 import dicttoxml
 import string
 import os
+import encryption
 
 BUFFER_SIZE = 4096
 FORMAT = "utf-8"
+encrypt_status = False
 
 
 class Client:
@@ -41,49 +43,6 @@ class Client:
                 f"Connection failed. Please make sure there is a server running on IP {self.server}: Port {self.port}"
             )
             return False
-
-    CHAR_SET = string.printable[:-5]
-    SUBSTITUTION_CHARS = CHAR_SET[-3:] + CHAR_SET[:-3]
-
-    ENCRYPTION_DICT = {}
-    DECRYPTION_DICT = {}
-
-    for i, k in enumerate(CHAR_SET):
-        v = SUBSTITUTION_CHARS[i]
-        ENCRYPTION_DICT[k] = v
-        DECRYPTION_DICT[v] = k
-
-    def encrypt_msg(self, plaintext):
-        """
-        Encrypt the given plaintext using a simple substitution cipher.
-
-        Args:
-            plaintext (str): The plaintext to be encrypted.
-
-        Returns:
-            str: The encrypted ciphertext.
-        """
-        ciphertext = []
-        for k in plaintext:
-            v = self.ENCRYPTION_DICT.get(k, k)
-            ciphertext.append(v)
-        return "".join(ciphertext)
-
-    def decrypt_msg(self, ciphertext):
-        """
-        Decrypt the given ciphertext using the reverse substitution cipher.
-
-        Args:
-            ciphertext (str): The ciphertext to be decrypted.
-
-        Returns:
-            str: The decrypted plaintext.
-        """
-        plaintext = []
-        for k in ciphertext:
-            v = self.DECRYPTION_DICT.get(k, k)
-            plaintext.append(v)
-        return "".join(plaintext)
 
     def send_data(self, msg: str):
         """
@@ -183,7 +142,7 @@ class Client:
         else:
             print("Invalid selection. Please choose either 'JSON', 'Binary', or 'XML'.")
 
-    def send_file(self, filename):
+    def send_file(self, filename, encryption_status):
         """
         Send a file to the connected server.
 
@@ -201,7 +160,11 @@ class Client:
         # Encode the metadata and send it as bytes by calling send_data function
         metadata_filename = filename
         self.send_data(metadata_filename)  # send filename
-
+        if encryption_status == True:
+            metadata_encrypt_status = "encrypted"
+        else:
+            metadata_encrypt_status = "not encrypted"
+        self.send_data(metadata_encrypt_status)
         with open(filename, "rb") as file:
             while True:
                 bytes_read = file.read(BUFFER_SIZE)  # read with BUFFER SIZE
@@ -231,17 +194,9 @@ if __name__ == "__main__":
             encrypt_values = input("Encrypt values? (Yes/No): ").lower()
 
         if encrypt_values == "yes":
-            encrypted_group_members = []
-            for member in group_members:
-                encrypted_member = {}
-                for key, value in member.items():
-                    encrypted_key = client.encrypt_msg(key)
-                    encrypted_value = client.encrypt_msg(value)
-                    encrypted_member[encrypted_key] = encrypted_value
-                encrypted_group_members.append(encrypted_member)
-                print("Encrypted dictionary:")
-                print(encrypted_group_members)
-                group_members = encrypted_group_members
+            group_members = encryption.encrypt_list_of_dicts(group_members)
+            encrypt_status = True
+
         else:
             print("Skipping encryption. Proceeding with the original dictionary.")
 
@@ -257,6 +212,6 @@ if __name__ == "__main__":
 
         send_to_server = input("Would you like to send the file to the server?")
         if send_to_server == "Yes":
-            client.send_file(filename)
+            client.send_file(filename, encrypt_status)
         else:
             print("Send file canceled.")
