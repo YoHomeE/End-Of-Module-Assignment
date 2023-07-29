@@ -2,7 +2,7 @@ import unittest
 import socket
 import threading
 from unittest.mock import Mock, patch
-from server import Server
+from server_testing import Server
 
 class TestServer(unittest.TestCase):
     """Test cases for the Server class."""
