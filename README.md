@@ -18,7 +18,9 @@ To use the Substitution Cipher Server-Client Application, follow these steps:
 
 5. Run the server by executing the following command in your terminal:
 
-`python3 server.py`
+```
+python3 server.py
+```
 
 The server will start running and display the listening address and active connections.
 
@@ -26,7 +28,9 @@ The server will start running and display the listening address and active conne
 
 7. Run the client by executing the following command:
 
-`python3 client.py`
+```
+python3 client.py
+```
 
 The client application will start running and display a welcome message and instructions on how to use the program.
 
