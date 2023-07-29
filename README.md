@@ -58,3 +58,71 @@ Please note the following:
 
 By following these instructions, you can effectively use the Substitution Cipher Server-Client Application for secure transfer and management of dictionaries. Enjoy using the application!
 
+## Unit Tests
+
+These tests are aimed at testing the individual functions within the client-server application across a variety of inputs to ensure each function works as expected without any bugs.
+
+### Client Unit Tests
+
+1. **utest1:**
+   Description: Test the function responsible for connecting the client to the server.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 utest1.py
+     ```
+
+2. **utest2:**
+   Description: Test the encryption and decryption functions for dictionary values using a substitution cipher.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 utest2.py
+     ```
+
+3. **utest4:**
+   Description: Test the method for creating dictionaries with the specified keys and values.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 utest4.py
+     ```
+
+4. **utest5:**
+   Description: Test the method for saving files in JSON, Binary, and XML formats.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 utest5.py
+     ```
+
+### Server Unit Tests
+
+1. **sutest1:**
+   Description: Test the server's file receiving function to ensure files are correctly received and saved in the "received_files" directory.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 sutest1.py
+     ```
+
+2. **sutest2:**
+   Description: test suite for the Server class. It includes test cases to verify that the server can successfully send and receive data
+   with connected clients. The tests evaluate the correctness of the send_data and receive_data methods in handling data transmission.
+   Additionally, the suite contains tests for the receive_metadata method, which ensures that the server can receive metadata about files
+   from clients and save the files appropriately in JSON, pickle, and XML formats.
+   Instructions to run:
+   - Navigate to the "tests" folder within the Final Project Code folder.
+   - Run the following command:
+     ```
+     python3 sutest2.py
+     ```
+
+Make sure you have the necessary environment set up before running the unit tests. The tests will provide valuable insights into the functionality and correctness of the client-server application. Enjoy testing!
+
+
